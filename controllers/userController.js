@@ -327,6 +327,7 @@ exports.followUser = async (req,resp)=>{
     const file =  req.files.avater;   //* Use cloudinary Image upload
 
         cloudinary.uploader.upload(file.tempFilePath,
+
           async(error,result)=>{
            
 
@@ -334,32 +335,47 @@ exports.followUser = async (req,resp)=>{
               
               const user = await User.findById(req.user._id);  //* <--Find loggedInUse
 
-              const imageUrl = user.avater.url;    //* <-- url sa image ka name find code
-              const urlArray = imageUrl.split('/');
-              const image = urlArray[urlArray.length -1];
-              const imageName = image.split('.')[0]
-              console.log(imageName);
+                const imageUrl = user.avater.url;    //* <-- url sa image ka name find code
+                const urlArray = imageUrl.split('/');
+                const image = urlArray[urlArray.length -1];
+                const imageName = image.split('.')[0]
+
               
               
-              user.avater.url = result.url
+              if(user.avater.url === "" || user.avater.url === null){
+
+                console.log("Database main Url Nahi hai");
+
+                user.avater.url = result.url
+
+                await user.save();
+
+                return resp.status(200).json({status:true, message: "Profile pic set"})
+                 
+              }else{
+
+                
+
+                console.log(`Database Mine Url hai --> ${imageName}`);
+                
+                
+                user.avater.url = result.url
+
+                await user.save();
+
+                cloudinary.uploader.destroy(imageName,(error,result)=>{    //* <-- cloudinary Delete image
+                  console.log(error,result);
+                })
+
+                return resp.status(200).json({status:true, message: "Profile pic Update"})
+
+              }
 
               //TODO User Avatar:TODO
-          
               
-               
-             
-              await user.save();
-
-              cloudinary.uploader.destroy(imageName,(error,result)=>{    //* <-- cloudinary Delete image
-                console.log(error,result);
-              })
-
-              
-              
-              resp.status(200).json({status:true, message: "Profile Updated"})
              
            } catch (error) {
-              resp.status(500).json({ status:false, message:`Server Error ${error.message}`})
+              resp.status(500).json({ status:false, message:`Server Error : ${error.message}`})
            }
             
             
@@ -398,7 +414,27 @@ exports.deleteMyProfile = async (req,resp)=>{
     const following = user.following   //* <-- Store User following array element   ( UserProfile delete hone se pahle Store element)
     const userId = user._id            //* <-- Store User userId array element      ( UserProfile delete hone se pahle Store element)
 
-    user.remove()
+
+
+
+      const imageUrl = user.avater.url;            //* <-- User Profile pic url store 
+      const urlArray = imageUrl.split('/');        //* <-- url / remove this line
+      const image = urlArray[urlArray.length -1]; 
+      const imageName = image.split('.')[0]        //* <-- User Profile pic url sa image ka name find code 
+    
+
+      user.remove()    //* <-- User Remove 
+
+     
+    //* Check image available
+    if(imageName !== ""){  
+      cloudinary.uploader.destroy(imageName,(error,result)=>{    //* <-- cloudinary sa Delete profile pic code
+        console.log(error,result);
+      });
+
+    }
+
+
 
 
     //* Logout user after deleting profile
@@ -409,21 +445,40 @@ exports.deleteMyProfile = async (req,resp)=>{
     
 
 
+
+
     //* delete all posts of the user 
     for (let i = 0; i < posts.length; i++) {
-      const post = await postSchema.findById(posts[i])
+
+      const post = await postSchema.findById(posts[i]);
+
+      const imageUrl = post.image.url;             //* <-- User Post url store 
+      const urlArray = imageUrl.split('/');        //* <-- url / remove and convert array
+      const image = urlArray[urlArray.length -1];
+      const imageName = image.split('.')[0]        //* <-- User Post remove .then name find code 
+      
+      
       await post.remove()
+        
+       cloudinary.uploader.destroy(imageName,(error,result)=>{    //* <-- cloudinary Delete All Post Images
+         console.log(error,result);
+       })
+      
     }
     
 
+
+
     //* Removing User from Followers Following
     for (let i = 0; i < followers.length; i++) {
-      const follower = await User.findById(followers[i]);
+      const follower = await User.findById(followers[i]);  //* Find
       const index = follower.followers.indexOf(userId);
       follower.followers.splice(index,1);
       await follower.save()
     }
     
+
+
 
     //* Removing User from following's Followers
     for (let i = 0; i < following.length; i++) {
@@ -432,8 +487,12 @@ exports.deleteMyProfile = async (req,resp)=>{
       follows.following.splice(index,1);
       await follows.save()
     }
+
+
     
-  resp.status(200).json({ success:true, message:"Profile deleted"})
+    resp.status(200).json({ success:true, message:"Profile deleted"});
+
+
     
   } catch (error) {
     resp.status(500).json({ status:false, message:`Server Error ${error.message}`})
@@ -550,7 +609,7 @@ exports.forgotPassword = async (req,resp)=>{
        return resp.status(404).json({ status:false, message:"Email does not exist"})
     }
 
-  //* receive Normal GenerateResetToken  
+  //* receive Normal GenerateResetToken     ( yah function to kar return karta hai )
     const resetPasswordToken = user.getResetPasswordToken();    //* <-- Call getResetPasswordToken() Function    (Function define this directory controller/userController.js ) 
 
     await user.save();

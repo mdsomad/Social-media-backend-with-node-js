@@ -11,7 +11,8 @@ const {
      getUserProfile,
      getAllUsers,
      forgotPassword,
-     resetPassword
+     resetPassword,
+     updateAvaterProfile
     } = require("../controllers/userController");
 
 const { isAuthenticated } = require("../middlewares/auth");          //* Cookies Token Add & Save    (Work Web Then use this --> isAuthenticated )
@@ -33,6 +34,8 @@ routes.route("/follow/:id",).get(isAuthenticated,followUser);
 routes.route("/update/password",).put(isAuthenticated,updatePassowrd);
 
 routes.route("/update/profile",).put(isAuthenticated,updateProfile);
+
+routes.route("/update/avater",).put(isAuthenticated,updateAvaterProfile);
 
 routes.route("/delete/me",).delete(isAuthenticated,deleteMyProfile);
 

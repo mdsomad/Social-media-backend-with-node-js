@@ -448,7 +448,7 @@ exports.updateCaption = async (req,resp)=>{
  
 
   //TODO Create Delete Comment Function   ( only Post Owner comments Selected Comment Delete )
-  exports.deleteComment = async (req,resp)=>{
+  exports.postOwnerdeleteComment = async (req,resp)=>{
 
     try {
 

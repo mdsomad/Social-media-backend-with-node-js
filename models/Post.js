@@ -47,22 +47,17 @@ const postSchema = new mongoose.Schema({            //* <-- Yah hai Database Obj
          ref:"User"   
 
          },
-
          comment:{
             type:String,
             required:true
-         }
+         },
+         commentdate:{ 
+            type: Date, 
+            default:Date.now
+        },
      
       }
      ],
-
-
-
-    date:{ 
-        type: Date, 
-        default:Date.now
-    },
-    
     
     
 });
