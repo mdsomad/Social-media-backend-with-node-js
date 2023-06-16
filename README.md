@@ -18,7 +18,7 @@ POST Create Account
 http://localhost:5000/api/v1/register
 ```
 Make things easier for your teammates with a complete request description.
-## json Bodyraw (json)
+## Body raw (json)
 ```sh
 json
 {
@@ -26,4 +26,28 @@ json
   "email": "mdsomad@gmail.com",
   "password": "123456"
 }
+
+```
+
+
+
+
+POST Sign In
+```sh
+http://localhost:5000/api/v1/login
+```
+Make things easier for your teammates with a complete request description.
+## Body raw (json)
+```sh
+json
+{
+ "email":"mdsomad@gmail.com",
+  "password":"123456"
+}
+
+```
+
+
+
+
 
