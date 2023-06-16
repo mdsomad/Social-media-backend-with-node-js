@@ -1,32 +1,21 @@
 const mongoose = require('mongoose');
+const colors = require('colors');
 
 
 
-exports.connectDatabase = async(DATABASE_URL) => {
+exports.connectDatabase = async() => {
 
 
-    try{
-      
-        const DB_OPTIONS = {
-            dbName:"SocialMedia"    //* <-- Database Name 
-        }
+    try {
+        const conn = await mongoose.connect(process.env.DATABASE_URL);
+        console.log(
+          `Conneted To Mongodb Databse Successfully... ${conn.connection.host}`.bgMagenta.white
+        );
+      } catch (error) {
+        console.log(`Connection Errro in Mongodb ${error}`.bgRed.red);
+      }
 
-        
-        mongoose.set('strictQuery', false);
-        await mongoose.connect( DATABASE_URL, DB_OPTIONS,{    //* <-- Connect Database
-            useNewUrlParser: true,
-            useCreateIndex:true,
-            useUnifiedTopology: true,
-            useFindAndModify : false
-        }).then(()=>{
-            console.log("Connected Successfully...");
-        });
-          
-
-    }catch(err){
-      console.log("MongoDB Atlas Connection Failed:"+ err);
-    }
-
+    
 
 
 

@@ -6,14 +6,13 @@ const  {connectDatabase}  = require("./config/database");
 
 
 
-const DATABASE_URL = process.env.DATABASE_URL || "mongodb://localhost:27017"
 const PORT = process.env.PORT || 3000
 
-connectDatabase(DATABASE_URL);
 
+connectDatabase();
 
 
 
 app.listen(PORT,()=>{
-    console.log(`Server Running at http://localhost:${PORT}`);
+    console.log(`Server Running at http://localhost:${PORT}`.bgCyan.blue);
 });
