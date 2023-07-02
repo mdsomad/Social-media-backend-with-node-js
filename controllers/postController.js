@@ -18,14 +18,15 @@ exports.createPost = async(req,resp) => {
    //!  {folder: 'PostImages'},   // not use Wajah Hai file delete nahi hota folder ka
     async(error,result)=>{
 
-  //! console.log(result);
+      console.log(error);
+      console.log(result);
 
       try {
 
         const newPostData = {
             caption:req.body.caption,
             image:{
-                public_id:"req.body.public_id",
+                public_id: result.public_id,
                 url:result.url
             },
             owner:req.user._id
@@ -40,12 +41,13 @@ exports.createPost = async(req,resp) => {
         await user.save()
         
 
-        resp.status(201).json({status: true,post:`Post Created Successfully ${post}`});
+        // resp.status(201).json({status: true,post:`Post Created Successfully ${post}`});
+        resp.status(201).json({success: true,post:'Post Created Successfully',post});
         
         
         
     } catch (error) {
-       resp.status(500).json({ status:false, message:`Server Error ${error.message}`})
+       resp.status(500).json({ success:false, message:`Server Error ${error.message}`})
     }
       
       
@@ -74,12 +76,12 @@ exports.deletePost = async (req,resp)=>{
       
 
      if(!post){
-        return resp.status(404).json({ status:false, message: "Post not found "})
+        return resp.status(404).json({ success:false, message: "Post not found "})
       }
         
       if(post.owner.toString() !== req.user._id.toString()){
 
-        return resp.status(404).json({status:false, message: "User Unauthorized"})
+        return resp.status(404).json({success:false, message: "User Unauthorized"})
         
       }
 
@@ -111,7 +113,7 @@ exports.deletePost = async (req,resp)=>{
         await user.save()
         
         
-        resp.status(200).json({ status:true, message: "Post deleted "});
+        resp.status(200).json({ success:true, message: "Post deleted "});
         
           
     
@@ -120,7 +122,7 @@ exports.deletePost = async (req,resp)=>{
 
         
     } catch (error) {
-      resp.status(500).json({ status:false, message:`Server Error: ${error.message}`})
+      resp.status(500).json({ success:false, message:`Server Error: ${error.message}`})
     }
     
     
@@ -149,11 +151,13 @@ exports.likeAndunlikePost = async(req,resp)=>{
 
     try {
 
-        const post = await Post.findById(req.params.id);
+        const post = await Post.findById(req.params.id).populate('owner');
+
+        // const post = await Post.find().populate("owner");
 
 
         if(!post){
-          return resp.status(404).json({status:false, message: "Post not found "})
+          return resp.status(404).json({success:false, message: "Post not found "})
         }
         
         
@@ -166,23 +170,23 @@ exports.likeAndunlikePost = async(req,resp)=>{
 
             await post.save()
             
-          return resp.status(200).json({ status:true, message: "Post Unliked "})
+          return resp.status(200).json({ success:true,post})
             
         }else{
-
+          
             //* Post like code
             post.likes.push(req.user._id);
 
             await post.save();
 
-            return resp.status(200).json({ status:true, message: "Post Liked "})
+            return resp.status(200).json({ success:true,post})
         }
-        
+      
         
       
         
     } catch (error) {
-      resp.status(500).json({ status:false, message:`Server Error : ${error.message}`})
+      resp.status(500).json({ success:false, message:`Server Error : ${error.message}`})
     }
     
     
@@ -211,12 +215,12 @@ exports.getPostOfFollowing = async (req,resp)=>{
         
         
 
-       resp.status(200).json({status:true,posts})
+       resp.status(200).json({success:true,posts})
         
         
         
     } catch (error) {
-      resp.status(500).json({ status:false, message:`Server Error ${error.message}`})
+      resp.status(500).json({ success:false, message:`Server Error ${error.message}`})
     }
     
     
@@ -248,14 +252,14 @@ exports.updateCaption = async (req,resp)=>{
        const { caption } = req.body
         
        if(!post){
-        return resp.status(404).json({ status:false, message: "Post not found"})
+        return resp.status(404).json({ success:false, message: "Post not found"})
        }
        
        
          //* Check Post owner
        if(post.owner.toString() !== req.user._id.toString()){
 
-        return resp.status(404).json({ status:false, message: "User Unauthorized"})
+        return resp.status(404).json({ success:false, message: "User Unauthorized"})
         
       }
 
@@ -264,10 +268,10 @@ exports.updateCaption = async (req,resp)=>{
 
        await post.save();
        
-       resp.status(200).json({status:true, message: "Post updated"})
+       resp.status(200).json({success:true, post})
       
     } catch (error) {
-      resp.status(500).json({ status:false, message:`Server Error : ${error.message}`})
+      resp.status(500).json({ success:false, message:`Server Error : ${error.message}`})
     }
   }
 
@@ -280,7 +284,7 @@ exports.updateCaption = async (req,resp)=>{
 
 
 //TODO addOnUpdateComment Function create
-//   exports.addOnUpdateComment = async (req,resp)=>{
+// !  exports.addOnUpdateComment = async (req,resp)=>{
 
 //     try {
 
@@ -338,6 +342,81 @@ exports.updateCaption = async (req,resp)=>{
 
 
 
+//TODO All Post Fetch 
+exports.getALlPosts = async (req,resp)=>{
+  try {
+
+     const post = await Post.find().populate("owner").sort({ createdAt: -1 });
+
+     resp.status(200).json({success:true, post})
+    
+  } catch (error) {
+    resp.status(500).json({ success:false, message:`Server Error : ${error.message}`})
+  }
+}
+
+
+
+
+
+
+
+
+
+
+//TODO All CommentById Fetch 
+exports.getCommentById = async (req,resp)=>{
+  try {
+
+    const post = await Post.findById(req.params.id)
+    .populate({ 
+      path: 'comments',
+      populate: {
+        path: 'user',
+      } 
+   });
+     let comments = post.comments.reverse();
+    //  const post = await Post.find().populate("owner").sort({ createdAt: -1 })
+     resp.status(200).json({success:true, comments})
+    
+  } catch (error) {
+    resp.status(500).json({ success:false, message:`Server Error : ${error.message}`})
+  }
+}
+
+
+
+
+
+
+
+//TODO  Fetch All CommentById
+exports.getCommentById = async (req,resp)=>{
+  try {
+
+    const post = await Post.findById(req.params.id)
+    .populate({ 
+      path: 'comments',
+      populate: {
+        path: 'user',
+      } 
+   });
+     let comments = post.comments.reverse();
+    //  const post = await Post.find().populate("owner").sort({ createdAt: -1 })
+     resp.status(200).json({success:true, comments})
+    
+  } catch (error) {
+    resp.status(500).json({success:false, message:`Server Error : ${error.message}`})
+  }
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -348,27 +427,42 @@ exports.updateCaption = async (req,resp)=>{
 
     try {
 
-        const post = await Post.findById(req.params.id);
+        const post = await Post.findById(req.params.id).populate({ 
+          path: 'comments',
+          populate: {
+            path: 'user',
+          } 
+       });
 
         if(!post){
             return  resp.status(404).json({ success:false, message:"Post not found"});
         }
         
-           post.comments.push({     //* <-- add comment 
+          post.comments.push({     //* <-- add comment 
                 user:req.user._id,
                 comment:req.body.comment
            })
 
            await post.save();
 
-           return resp.status(200).json({ success:true, message:"Comment added"})
+          const fetchComments = await Post.findById(req.params.id)
+          .populate({ 
+            path: 'comments',
+            populate: {
+              path: 'user',
+            } 
+        });
+        let comments = fetchComments.comments.reverse();
+
+
+           return resp.status(200).json({success:true,comments})
         
 
         
 
         
     } catch (error) {
-      resp.status(500).json({ status:false, message:`Server Error : ${error.message}`})
+      resp.status(500).json({success:false, message:`Server Error : ${error.message}`})
     }
     
     
@@ -387,10 +481,15 @@ exports.updateCaption = async (req,resp)=>{
 
     try {
 
-        const post = await Post.findById(req.params.id);
+        const post = await Post.findById(req.params.id).populate({ 
+          path: 'comments',
+          populate: {
+            path: 'user',
+          } 
+      });
 
         if(!post){
-            return  resp.status(404).json({ status:false, message:"Post not found"});
+            return  resp.status(404).json({ success:false, message:"Post not found"});
         }
        
 
@@ -402,7 +501,7 @@ exports.updateCaption = async (req,resp)=>{
 
 
           //* Check user
-          if (comment.user.toString() !== req.user._id.toString()) {
+          if (comment.user._id.toString() !== req.user._id.toString()) {
             return resp.status(401).json({ success:false, message:"User not authorized"});
           }
 
@@ -427,12 +526,14 @@ exports.updateCaption = async (req,resp)=>{
 
           await post.save();
 
-          return resp.status(200).json({ status:true, message:"Your comment updated"})
+         let comments = post.comments.reverse();
+
+          return resp.status(200).json({success:true,comments})
 
        
-        
+
     } catch (error) {
-      resp.status(500).json({ status:false, message:` Server Error ${error.message}`})
+      resp.status(500).json({ success:false, message:` Server Error ${error.message}`})
     }
     
     
@@ -453,19 +554,24 @@ exports.updateCaption = async (req,resp)=>{
     try {
 
 
-        const post = await Post.findById(req.params.id);   //* <-- Find Post
+        const post = await Post.findById(req.params.id).populate({ 
+          path: 'comments',
+          populate: {
+            path: 'user',
+          } 
+      });   //* <-- Find Post
 
         if(!post){
-            return resp.status(404).json({ status:false, message:"Post not found"});
+            return resp.status(404).json({ success:false, message:"Post not found"});
         }
 
 
 
         //* Checking If owner wants to delete
-        if(post.owner.toString() === req.user._id.toString()){
+        if(post.owner._id.toString() === req.user._id.toString()){
              
             if(req.body.commentId==undefined){
-              return resp.status(400).json({status:false, message:"Comment id is required"});
+              return resp.status(400).json({success:false, message:"Comment id is required"});
             }
             
             
@@ -481,16 +587,18 @@ exports.updateCaption = async (req,resp)=>{
 
             await post.save();
 
-            return resp.status(200).json({ status:true, message:"Selected Comment has deleted"});
+            let comments = post.comments.reverse();
+
+            return resp.status(200).json({success:true, comments});
             
             
         }else{
-          return resp.status(404).json({ status:false, message: "User not authorized"})
+          return resp.status(404).json({success:false, message: "User not authorized"})
         }
         
         
     } catch (error) {
-       resp.status(500).json({ status:false, message:`Server Error : ${error.message}`})
+       resp.status(500).json({success:false, message:`Server Error : ${error.message}`})
     }
     
     
@@ -513,7 +621,12 @@ exports.updateCaption = async (req,resp)=>{
 
     try {
 
-        const post = await Post.findById(req.params.id);   //* <-- Post Find   (Provide Post _id)
+        const post = await Post.findById(req.params.id).populate({ 
+          path: 'comments',
+          populate: {
+            path: 'user',
+          } 
+      });   //* <-- Post Find   (Provide Post _id)
          
 
         //* Pull out & baahar kheenchen comment
@@ -523,13 +636,13 @@ exports.updateCaption = async (req,resp)=>{
         
          
         if(!post){
-            return resp.status(404).json({status:false, message:"Post not found"});
+            return resp.status(404).json({success:false, message:"Post not found"});
         } 
 
 
           //* Check user authorized     (yah check kar raha hai comment user ka or login user ka id match kar raha hai kya Nahin)
-          if (comment.user.toString() !== req.user._id.toString()) {
-              return resp.status(401).json({ status:true, message:"User not authorized"});
+          if (comment.user._id.toString() !== req.user._id.toString()) {
+              return resp.status(401).json({ success:false, message:"User not authorized"});
           }
 
           
@@ -543,12 +656,14 @@ exports.updateCaption = async (req,resp)=>{
 
         await post.save();
 
-        resp.status(200).json({ status:true, message:"Your Comment has deleted"});
+        let comments = post.comments.reverse();
+
+        resp.status(200).json({ success:true, comments});
         
         
     } catch (error) {
       console.log(error);
-      resp.status(500).json({ status:false, message:` Server Error ${error.message}`})
+      resp.status(500).json({ success:false, message:` Server Error ${error.message}`})
     }
     
     
@@ -572,14 +687,14 @@ exports.updateCaption = async (req,resp)=>{
         const post = await Post.findById(req.params.id);   //* <-- Find Post
         
         if(!post){
-          return resp.status(404).json({ status:false, message: "Post not found"});
+          return resp.status(404).json({ success:false, message: "Post not found"});
         }
         
-        resp.status(200).json({ status:true, post:post});
+        resp.status(200).json({ success:true, post:post});
         
         
       } catch (error) {
-        resp.status(500).json({ status:false, message:` Server Error : ${error.message}`})
+        resp.status(500).json({ success:false, message:` Server Error : ${error.message}`})
       }
     
     

@@ -92,7 +92,7 @@ exports.login = async (req,resp)=>{
 
      
     if(!isMatch){
-     return resp.status(400).json({status:false, message:"Incorrect password"})
+     return resp.json({status:false, message:"Incorrect password"})
     }
     
 
@@ -110,7 +110,7 @@ exports.login = async (req,resp)=>{
       }
     
 
-    resp.status(200).cookie("token",token,options).json({status:true,message:"Login Successfully",token:token})
+    resp.status(200).cookie("token",token,options).json({status:true,message:"Login Successfully",token:token,userId:user._id})
     
   } catch (error) {
     resp.status(500).json({ status:false, message:`Server Error ${error.message}`})
@@ -170,13 +170,15 @@ exports.logout = async (req,resp)=>{
 exports.followUser = async (req,resp)=>{
 
   try {
-
-    const userToFollow = await User.findById(req.params.id);  //* <-- userToFollow find user (loggedInUser provide _id)
-    const loggedInUser = await User.findById(req.user._id);   //* <-- loggedInUser Find token base id
+    
+     const userToFollow = await User.findById(req.params.id);  //* <-- userToFollow find user (loggedInUser provide _id)
+     const loggedInUser = await User.findById(req.user._id);   //* <-- loggedInUser Find token base id
+ 
+    
     
     
     if(!userToFollow){
-      return resp.status(404).json({ status:false, message: "User not found "})
+      return resp.status(404).json({ success:false, message: "User not found "})
     }
 
 
@@ -193,17 +195,23 @@ exports.followUser = async (req,resp)=>{
      await loggedInUser.save() //* then save
      await userToFollow.save() //* then save
      
-     resp.status(200).json({ status:true, message:"User Unfollowed"})
+    //  resp.status(200).json({ status:true, message:"User Unfollowed",userToFollow})
+    resp.status(200).json({ success:true,userToFollow})
      
   }else{
+
      
     loggedInUser.following.push(userToFollow._id); //* loggedInUser following arrey userToFollow _id add & push
     userToFollow.followers.push(loggedInUser._id); //* userToFollow followers arrey loggedInUser _id add & push 
      
     await loggedInUser.save(); //* then save
     await userToFollow.save(); //* then save
+
+    console.log(loggedInUser)
+    console.log(userToFollow)
     
-    resp.status(200).json({ status:true, message:"User followed"})
+    // resp.status(200).json({ status:true, message:"User followed",userToFollow})
+    resp.status(200).json({ success:true,userToFollow})
     
   }
     
@@ -212,7 +220,7 @@ exports.followUser = async (req,resp)=>{
    
     
   } catch (error) {
-    resp.status(500).json({ status:false, message:`Server Error ${error.message}`})
+    resp.status(500).json({ success:false, message:`Server Error ${error.message}`})
   }
 
   
@@ -222,7 +230,36 @@ exports.followUser = async (req,resp)=>{
 
 
 
+//TODO Create FetchAllFollowersById Function  
+exports.FetchAllFollowersById = async (req,resp)=>{
+  try {
 
+    const post = await User.findById(req.params.id).populate("followers");
+     let followers = post.followers.reverse();
+     resp.status(200).json({success:true, followers})
+    
+  } catch (error) {
+    resp.status(500).json({ success:false, message:`Server Error : ${error.message}`})
+  }
+}
+
+
+
+
+
+
+//TODO Create FetchAllFollowingById Function  
+exports.FetchAllFollowingById = async (req,resp)=>{
+  try {
+
+    const post = await User.findById(req.params.id).populate("following");
+     let following = post.following.reverse();
+     resp.status(200).json({success:true, following})
+    
+  } catch (error) {
+    resp.status(500).json({ success:false, message:`Server Error : ${error.message}`})
+  }
+}
 
 
 
@@ -242,14 +279,14 @@ exports.followUser = async (req,resp)=>{
 
 
        if(!oldPassword || !newPassword){
-        return resp.status(400).json({status:false, message: "Please provide old and new password"})
+        return resp.status(400).json({success:false, message: "Please provide old and new password"})
        }
        
         
        const isMatch = await user.matchPassword(oldPassword);  //* <-- Call matchPassword() Function    (Function define this directory controller/userController.js )
 
        if(!isMatch){
-        return resp.status(400).json({status:false, message: "incorrect Old password"})
+        return resp.status(400).json({success:false, message: "incorrect Old password"})
        }
 
 
@@ -257,10 +294,10 @@ exports.followUser = async (req,resp)=>{
 
        await user.save();  //* <-- then save
        
-       resp.status(200).json({status:true, message: "Password successfully update"})
+       resp.status(200).json({success:true, message: "Password successfully update"})
       
     } catch (error) {
-      resp.status(500).json({ status:false, message:`Server Error ${error.message}`})
+      resp.status(500).json({ success:false, message:`Server Error ${error.message}`})
     }
   }
 
@@ -293,7 +330,7 @@ exports.followUser = async (req,resp)=>{
         const checkEmail = await User.findOne({email}); //* Find User Provide Email
 
         if(checkEmail){
-          return resp.status(400).json({ status:false, message:"Email id already exists"})
+          return resp.status(400).json({ success:false, message:"Email id already exists"})
         }
          user.email = email;  //* <-- Email Update 
        }
@@ -304,10 +341,10 @@ exports.followUser = async (req,resp)=>{
         
       
        await user.save();
-       resp.status(200).json({status:true, message: "Profile Updated"})
+       resp.status(200).json({success:true, message: "Profile Updated"})
       
     } catch (error) {
-       resp.status(500).json({ status:false, message:`Server Error ${error.message}`})
+       resp.status(500).json({ success:false, message:`Server Error ${error.message}`})
     }
   }
 
@@ -346,11 +383,12 @@ exports.followUser = async (req,resp)=>{
 
                 console.log("Database main Url Nahi hai");
 
+                user.avater.public_id = result.public_id
                 user.avater.url = result.url
 
                 await user.save();
 
-                return resp.status(200).json({status:true, message: "Profile pic set"})
+                return resp.status(200).json({success:true, message: "Profile pic set",user})
                  
               }else{
 
@@ -358,7 +396,7 @@ exports.followUser = async (req,resp)=>{
 
                 console.log(`Database Mine Url hai --> ${imageName}`);
                 
-                
+                user.avater.public_id = result.public_id
                 user.avater.url = result.url
 
                 await user.save();
@@ -367,7 +405,7 @@ exports.followUser = async (req,resp)=>{
                   console.log(error,result);
                 })
 
-                return resp.status(200).json({status:true, message: "Profile pic Update"})
+                return resp.status(200).json({success:true, message: "Profile pic Update",user})
 
               }
 
@@ -375,7 +413,7 @@ exports.followUser = async (req,resp)=>{
               
              
            } catch (error) {
-              resp.status(500).json({ status:false, message:`Server Error : ${error.message}`})
+              resp.status(500).json({ success:false, message:`Server Error : ${error.message}`})
            }
             
             
@@ -516,7 +554,7 @@ exports.deleteMyProfile = async (req,resp)=>{
 exports.myProfile = async (req,resp) => {
    try {
 
-      const user = await User.findById(req.user._id).populate("posts").populate("following");  //* <-- Find loggedInUser
+      const user = await User.findById(req.user._id);  //* <-- Find loggedInUser
 
       resp.status(200).json({ 
         success:true,
@@ -543,19 +581,24 @@ exports.myProfile = async (req,resp) => {
 exports.getUserProfile = async (req,resp) => {
    try {
 
-      const user = await User.findById(req.params.id).populate("posts");  //* <--  Find User with populate("posts") (Provide id)
+
+    const user = await User.findById(req.params._id);
 
       if(!user){
-        return resp.status(404).json({ status:false, message:"User not found"})  
+        return resp.status(404).json({success:false, message:"User not found"})  
       }
 
-      resp.status(200).json({ status:true, user,})
+      resp.status(200).json({ 
+        success:true,
+         user,
+        })
     
       
    } catch (error) {
-     resp.status(500).json({ status:false, message:`Server Error ${error.message}`})
+     resp.status(500).json({ success:false, message:`Server Error ${error.message}`})
    }
 }
+
 
 
 
@@ -578,11 +621,11 @@ exports.getAllUsers = async (req,resp) => {
 
      
 
-      resp.status(200).json({ status:true, users,})
+      resp.status(200).json({ success:true, users,})
     
       
    } catch (error) {
-    resp.status(500).json({ status:false, message:`Server Error : ${error.message}`})
+    resp.status(500).json({ success:false, message:`Server Error : ${error.message}`})
    }
 }
 
@@ -606,7 +649,7 @@ exports.forgotPassword = async (req,resp)=>{
     const user = await User.findOne({email:req.body.email});
 
     if(!user){
-       return resp.status(404).json({ status:false, message:"Email does not exist"})
+       return resp.status(404).json({ success:false, message:"Email does not exist"})
     }
 
   //* receive Normal GenerateResetToken     ( yah function to kar return karta hai )
@@ -629,7 +672,7 @@ exports.forgotPassword = async (req,resp)=>{
       
     })
 
-    resp.status(200).json({ status:true, message:`Email send to ${user.email}`})
+    resp.status(200).json({ success:true, message:`Email send to ${user.email}`})
     
     
    } catch (error) {
@@ -637,14 +680,14 @@ exports.forgotPassword = async (req,resp)=>{
      user.resetPasswordExpire = undefined
      await user.save();
        
-     resp.status(500).json({ status:false, message:`Server Error : ${error.message}`})
+     resp.status(500).json({ success:false, message:`Server Error : ${error.message}`})
      
      
    }
     
     
   } catch (error) {
-    resp.status(500).json({ status:false, message:`Server Error : ${error.message}`})
+    resp.status(500).json({ success:false, message:`Server Error : ${error.message}`})
   }
   
   
@@ -673,7 +716,7 @@ exports.resetPassword = async(req,resp)=>{
     })
   
     if(!user){
-       return resp.status(401).json({ status:false, message:"Token is invalid or has expired"})
+       return resp.status(401).json({ success:false, message:"Token is invalid or has expired"})
     }
   
 
@@ -684,13 +727,13 @@ exports.resetPassword = async(req,resp)=>{
   
     await user.save()   //* <-- Then Save
     
-    resp.status(200).json({ status:true, message:`Password Reset Successfully`})
+    resp.status(200).json({ success:true, message:`Password Reset Successfully`})
     
     
     
     
   } catch (error) {
-     resp.status(500).json({ status:false, message:`Server Error this : ${error.message}`})
+     resp.status(500).json({ success:false, message:`Server Error this : ${error.message}`})
   }
   
  
