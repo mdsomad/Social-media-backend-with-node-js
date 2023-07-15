@@ -14,11 +14,11 @@ cloudinary.config({    //* cloudinary Image store (config)
   });
 
 
-routes.route("/post/upload",).post(isAuthenticated,createPost)
+routes.route("/post/upload",).post(checkUserAuth,createPost)
 
 routes.route("/getAllPost",).get(getALlPosts)
 
-routes.route("/post/:id",).get(checkUserAuth,likeAndunlikePost).put(isAuthenticated,updateCaption);  //* single route  multiple use  post get & chenge put & work updateCaption
+routes.route("/post/:id",).get(checkUserAuth,likeAndunlikePost).put(checkUserAuth,updateCaption);  //* single route  multiple use  post get & chenge put & work updateCaption
 
 routes.route("/post/delete/:id",).delete(isAuthenticated,deletePost);
 

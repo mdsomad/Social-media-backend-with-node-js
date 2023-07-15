@@ -8,7 +8,7 @@ const postSchema = new mongoose.Schema({            //* <-- Yah hai Database Obj
 
     caption:String,
 
-    image:{
+    images:{
       public_id:String,
       url:String
     },

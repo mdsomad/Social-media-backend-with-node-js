@@ -25,20 +25,24 @@ exports.createPost = async(req,resp) => {
 
         const newPostData = {
             caption:req.body.caption,
-            image:{
+            images:{
                 public_id: result.public_id,
                 url:result.url
             },
             owner:req.user._id
         };
 
-        const post = await  Post.create(newPostData);      //* <-- Post Craete
+        const newPost = await  Post.create(newPostData);      //* <-- Post Craete
   
         const user = await User.findById(req.user._id);    //* <-- Find created post user
 
-        user.posts.push(post._id);                         //* <-- User posts arrey add & push post _id
+        user.posts.push(newPost._id);                         //* <-- User posts arrey add & push post _id
 
         await user.save()
+
+        const post = await Post.findById(newPost._id).populate('owner');
+
+        
         
 
         // resp.status(201).json({status: true,post:`Post Created Successfully ${post}`});
@@ -47,6 +51,7 @@ exports.createPost = async(req,resp) => {
         
         
     } catch (error) {
+       console.log(error)
        resp.status(500).json({ success:false, message:`Server Error ${error.message}`})
     }
       
@@ -88,12 +93,12 @@ exports.deletePost = async (req,resp)=>{
 
         
       
-       const imageUrl = post.image.url;    //* <-- url sa image ka name find code
+       const imageUrl = post.images.url;    //* <-- url sa image ka name find code
        const urlArray = imageUrl.split('/');
        const image = urlArray[urlArray.length -1];
        const imageName = image.split('.')[0]
 
-      //! console.log(imageName);
+       console.log(imageName);
 
 
         await post.remove();
@@ -117,9 +122,7 @@ exports.deletePost = async (req,resp)=>{
         
           
     
-        
-   
-
+      
         
     } catch (error) {
       resp.status(500).json({ success:false, message:`Server Error: ${error.message}`})
@@ -246,7 +249,7 @@ exports.getPostOfFollowing = async (req,resp)=>{
 exports.updateCaption = async (req,resp)=>{
     try {
 
-       const post = await Post.findById(req.params.id);
+       const post = await Post.findById(req.params.id).populate("owner");
 
 
        const { caption } = req.body
@@ -257,12 +260,11 @@ exports.updateCaption = async (req,resp)=>{
        
        
          //* Check Post owner
-       if(post.owner.toString() !== req.user._id.toString()){
+       if(post.owner._id.toString() !== req.user._id.toString()){
 
         return resp.status(404).json({ success:false, message: "User Unauthorized"})
         
       }
-
 
       post.caption = caption   //* <-- Update caption
 
@@ -390,26 +392,6 @@ exports.getCommentById = async (req,resp)=>{
 
 
 
-//TODO  Fetch All CommentById
-exports.getCommentById = async (req,resp)=>{
-  try {
-
-    const post = await Post.findById(req.params.id)
-    .populate({ 
-      path: 'comments',
-      populate: {
-        path: 'user',
-      } 
-   });
-     let comments = post.comments.reverse();
-    //  const post = await Post.find().populate("owner").sort({ createdAt: -1 })
-     resp.status(200).json({success:true, comments})
-    
-  } catch (error) {
-    resp.status(500).json({success:false, message:`Server Error : ${error.message}`})
-  }
-}
-
 
 
 
@@ -444,6 +426,8 @@ exports.getCommentById = async (req,resp)=>{
            })
 
            await post.save();
+
+           console.log(post);
 
           const fetchComments = await Post.findById(req.params.id)
           .populate({ 
