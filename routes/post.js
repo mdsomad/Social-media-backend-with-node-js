@@ -20,7 +20,7 @@ routes.route("/getAllPost",).get(getALlPosts)
 
 routes.route("/post/:id",).get(checkUserAuth,likeAndunlikePost).put(checkUserAuth,updateCaption);  //* single route  multiple use  post get & chenge put & work updateCaption
 
-routes.route("/post/delete/:id",).delete(isAuthenticated,deletePost);
+routes.route("/post/delete/:id",).delete(checkUserAuth,deletePost);
 
 routes.route("/posts",).get(isAuthenticated,getPostOfFollowing);
 

@@ -9,6 +9,7 @@ const cloudinary = require('cloudinary').v2;
 
 
 
+
 //TODO Craete Post function
 exports.createPost = async(req,resp) => {
 
@@ -16,6 +17,7 @@ exports.createPost = async(req,resp) => {
   const file = req.files.photo;   //* Use cloudinary Image upload
   cloudinary.uploader.upload(file.tempFilePath,
    //!  {folder: 'PostImages'},   // not use Wajah Hai file delete nahi hota folder ka
+     {folder: 'PostImages'},   // not use Wajah Hai file delete nahi hota folder ka
     async(error,result)=>{
 
       console.log(error);
@@ -93,21 +95,26 @@ exports.deletePost = async (req,resp)=>{
 
         
       
-       const imageUrl = post.images.url;    //* <-- url sa image ka name find code
-       const urlArray = imageUrl.split('/');
-       const image = urlArray[urlArray.length -1];
-       const imageName = image.split('.')[0]
 
-       console.log(imageName);
+      //! Filhal yah Tarika Use Nahin Kar rahe hai 
+      //  const imageUrl = post.images.url;    //* <-- url sa image ka name find code
+      //  const urlArray = imageUrl.split('/');
+      //  const image = urlArray[urlArray.length -1];
+      //  const imageName = image.split('.')[0]
+
+      //  console.log(imageName);
+
+      //   cloudinary.uploader.destroy(imageName,(error,result)=>{    //* <-- cloudinary Delete image
+      //     console.log(error,result);
+      //   })
+        
 
 
-        await post.remove();
+
+       await cloudinary.uploader.destroy(post.images.public_id);
+
+       await post.deleteOne();
    
-
-        cloudinary.uploader.destroy(imageName,(error,result)=>{    //* <-- cloudinary Delete image
-          console.log(error,result);
-        })
-       
         
         const user = await User.findById(req.user._id);   //* Find isAuth User id 
     
@@ -115,7 +122,7 @@ exports.deletePost = async (req,resp)=>{
     
         user.posts.splice(index,1);    //* <-- Post id Remove User Array
     
-        await user.save()
+        await user.save();
         
         
         resp.status(200).json({ success:true, message: "Post deleted "});
