@@ -364,7 +364,7 @@ exports.FetchAllFollowingById = async (req,resp)=>{
     const file =  req.files.avater;   //* Use cloudinary Image upload
 
         cloudinary.uploader.upload(file.tempFilePath,
-
+          {folder: 'UserProfileImages'},
           async(error,result)=>{
            
 
@@ -372,10 +372,10 @@ exports.FetchAllFollowingById = async (req,resp)=>{
               
               const user = await User.findById(req.user._id);  //* <--Find loggedInUse
 
-                const imageUrl = user.avater.url;    //* <-- url sa image ka name find code
-                const urlArray = imageUrl.split('/');
-                const image = urlArray[urlArray.length -1];
-                const imageName = image.split('.')[0]
+                // const imageUrl = user.avater.url;    //* <-- url sa image ka name find code
+                // const urlArray = imageUrl.split('/');
+                // const image = urlArray[urlArray.length -1];
+                // const imageName = image.split('.')[0]
 
               
               
@@ -401,9 +401,11 @@ exports.FetchAllFollowingById = async (req,resp)=>{
 
                 await user.save();
 
-                cloudinary.uploader.destroy(imageName,(error,result)=>{    //* <-- cloudinary Delete image
-                  console.log(error,result);
-                })
+                // cloudinary.uploader.destroy(imageName,(error,result)=>{    //* <-- cloudinary Delete image
+                //   console.log(error,result);
+                // })
+
+                await cloudinary.uploader.destroy(user.avater.public_id);
 
                 return resp.status(200).json({success:true, message: "Profile pic Update",user})
 
@@ -454,23 +456,26 @@ exports.deleteMyProfile = async (req,resp)=>{
 
 
 
-
-      const imageUrl = user.avater.url;            //* <-- User Profile pic url store 
-      const urlArray = imageUrl.split('/');        //* <-- url / remove this line
-      const image = urlArray[urlArray.length -1]; 
-      const imageName = image.split('.')[0]        //* <-- User Profile pic url sa image ka name find code 
+      //! Not Use
+      // const imageUrl = user.avater.url;            //* <-- User Profile pic url store 
+      // const urlArray = imageUrl.split('/');        //* <-- url / remove this line
+      // const image = urlArray[urlArray.length -1]; 
+      // const imageName = image.split('.')[0]        //* <-- User Profile pic url sa image ka name find code 
     
 
-      user.remove()    //* <-- User Remove 
+      user.deleteOne()    //* <-- User Remove 
 
-     
+     //! Not Use
     //* Check image available
-    if(imageName !== ""){  
-      cloudinary.uploader.destroy(imageName,(error,result)=>{    //* <-- cloudinary sa Delete profile pic code
-        console.log(error,result);
-      });
+    // if(imageName !== ""){  
+    //   cloudinary.uploader.destroy(imageName,(error,result)=>{    //* <-- cloudinary sa Delete profile pic code
+    //     console.log(error,result);
+    //   });
 
-    }
+    // }
+
+
+    await cloudinary.uploader.destroy(user.avater.public_id);
 
 
 
@@ -483,24 +488,40 @@ exports.deleteMyProfile = async (req,resp)=>{
     
 
 
+    //! Rhis Method Not use
+     //* delete all posts of the user 
+    //  for (let i = 0; i < posts.length; i++) {
 
+    //   const post = await postSchema.findById(posts[i]);
+
+    //   const imageUrl = post.image.url;             //* <-- User Post url store 
+    //   const urlArray = imageUrl.split('/');        //* <-- url / remove and convert array
+    //   const image = urlArray[urlArray.length -1];
+    //   const imageName = image.split('.')[0]        //* <-- User Post remove .then name find code 
+      
+      
+    //   await post.remove()
+        
+    //    cloudinary.uploader.destroy(imageName,(error,result)=>{    //* <-- cloudinary Delete All Post Images
+    //      console.log(error,result);
+    //    })
+      
+    //}
+    
+    
+    
+    
+   
 
     //* delete all posts of the user 
     for (let i = 0; i < posts.length; i++) {
 
       const post = await postSchema.findById(posts[i]);
-
-      const imageUrl = post.image.url;             //* <-- User Post url store 
-      const urlArray = imageUrl.split('/');        //* <-- url / remove and convert array
-      const image = urlArray[urlArray.length -1];
-      const imageName = image.split('.')[0]        //* <-- User Post remove .then name find code 
+  
       
-      
-      await post.remove()
+      await post.deleteOne()
         
-       cloudinary.uploader.destroy(imageName,(error,result)=>{    //* <-- cloudinary Delete All Post Images
-         console.log(error,result);
-       })
+      await cloudinary.uploader.destroy(post.images.public_id);
       
     }
     
