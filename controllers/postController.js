@@ -22,7 +22,7 @@ exports.createPost = async(req,resp) => {
 
       console.log(error);
       console.log(result);
-
+      
       try {
 
         const newPostData = {
@@ -44,10 +44,9 @@ exports.createPost = async(req,resp) => {
 
         const post = await Post.findById(newPost._id).populate('owner');
 
-        
-        
+      
 
-        // resp.status(201).json({status: true,post:`Post Created Successfully ${post}`});
+       
         resp.status(201).json({success: true,post:'Post Created Successfully',post});
         
         

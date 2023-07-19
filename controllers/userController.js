@@ -377,7 +377,7 @@ exports.FetchAllFollowingById = async (req,resp)=>{
                 // const image = urlArray[urlArray.length -1];
                 // const imageName = image.split('.')[0]
 
-              
+  
               
               if(user.avater.url === "" || user.avater.url === null){
 
@@ -635,10 +635,18 @@ exports.getUserProfile = async (req,resp) => {
 //TODO getAllUsers function Create
 exports.getAllUsers = async (req,resp) => {
    try {
+    
+    const {name} = req.query;
+      // const users = await User.find({}).populate("posts").populate("following") //* <-- Find All Users
 
-      const users = await User.find({}).populate("posts").populate("following") //* <-- Find All Users
+      const queryObject = {};
 
-      // const users = await User.find({$rgex:req.query.name, $options: 'i'});
+      if(name){
+        queryObject.name = {$regex:name, $options: "i"};
+      }
+
+      const users = await User.find(queryObject);
+     
 
      
 
