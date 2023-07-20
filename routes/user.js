@@ -40,7 +40,7 @@ routes.route("/Fetch/following/:id",).get(FetchAllFollowingById);
 
 routes.route("/change/password",).put(checkUserAuth,changePassowrd);
 
-routes.route("/update/profile",).put(isAuthenticated,updateProfile);
+routes.route("/update/profile",).put(checkUserAuth,updateProfile);
 
 routes.route("/update/avater",).put(isAuthenticated,updateAvaterProfile);
 

@@ -312,36 +312,72 @@ exports.FetchAllFollowingById = async (req,resp)=>{
 
 
 
+
  //TODO updateProfile function Create
   exports.updateProfile = async (req,resp)=>{
 
     try {
 
-       const user = await User.findById(req.user._id);  //* <--Find loggedInUser
+      //  const user = await User.findById(req.user._id);  //* <--Find loggedInUser
 
-       const {name,email} = req.body
+      //  const {name,email} = req.body
       
-       if(name){
-         user.name = name;  //* <-- Name Update
-       }
+      //  if(name){
+      //    user.name = name;  //* <-- Name Update
+      //  }
 
-       if(email){
+      //  if(email){
 
-        const checkEmail = await User.findOne({email}); //* Find User Provide Email
+      //   const checkEmail = await User.findOne({email}); //* Find User Provide Email
 
-        if(checkEmail){
-          return resp.status(400).json({ success:false, message:"Email id already exists"})
-        }
-         user.email = email;  //* <-- Email Update 
-       }
+      //   if(checkEmail){
+      //     return resp.status(400).json({ success:false, message:"Email id already exists"})
+      //   }
+      //    user.email = email;  //* <-- Email Update 
+      //  }
 
     
 
-       //TODO User Avatar:TODO
+      //  //TODO User Avatar:TODO
         
       
-       await user.save();
-       resp.status(200).json({success:true, message: "Profile Updated"})
+      //  await user.save();
+      //  resp.status(200).json({success:true, message: "Profile Updated"})
+
+
+
+
+
+      const updateData = req.body;
+
+      const user = await User.findById(req.user._id);
+
+      if(user.email != updateData.email){
+        const checkEmail = await User.find({email:updateData.email}); //*
+        if(checkEmail){
+          return resp.json({ success:false, message:"Email id already exists"})
+        }
+
+      }else{
+        const updatedUser = await User.findOneAndUpdate(
+          { _id: req.user._id },
+          updateData,
+          { new: true }
+        );
+
+          if(!updatedUser) {
+              throw "user not found!";
+          }
+
+        return resp.json({success: true, user: updatedUser, message: "User updated!" });
+      }
+
+
+      
+
+     
+      
+      
       
     } catch (error) {
        resp.status(500).json({ success:false, message:`Server Error ${error.message}`})
