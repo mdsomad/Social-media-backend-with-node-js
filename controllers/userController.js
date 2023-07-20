@@ -266,8 +266,8 @@ exports.FetchAllFollowingById = async (req,resp)=>{
 
 
 
- //TODO updatePassowrd function Create
-  exports.updatePassowrd = async (req,resp)=>{
+ //TODO Change Passowrd function Create
+  exports.changePassowrd = async (req,resp)=>{
     
     try {
 
@@ -286,7 +286,7 @@ exports.FetchAllFollowingById = async (req,resp)=>{
        const isMatch = await user.matchPassword(oldPassword);  //* <-- Call matchPassword() Function    (Function define this directory controller/userController.js )
 
        if(!isMatch){
-        return resp.status(400).json({success:false, message: "incorrect Old password"})
+        return resp.json({success:false, message: "Incorrect Old Password"})
        }
 
 

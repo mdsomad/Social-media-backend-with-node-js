@@ -15,6 +15,7 @@ const {
      updateAvaterProfile,
      FetchAllFollowersById,
      FetchAllFollowingById,
+     changePassowrd,
     } = require("../controllers/userController");
 
 const { isAuthenticated } = require("../middlewares/auth");          //* Cookies Token Add & Save    (Work Web Then use this --> isAuthenticated )
@@ -37,7 +38,7 @@ routes.route("/Fetch/followers/:id",).get(FetchAllFollowersById);
 
 routes.route("/Fetch/following/:id",).get(FetchAllFollowingById);
 
-routes.route("/update/password",).put(isAuthenticated,updatePassowrd);
+routes.route("/change/password",).put(checkUserAuth,changePassowrd);
 
 routes.route("/update/profile",).put(isAuthenticated,updateProfile);
 
@@ -49,7 +50,7 @@ routes.route("/me",).get(checkUserAuth,myProfile);
 
 routes.route("/user/:_id",).get(checkUserAuth,getUserProfile);
 
-routes.route("/users",).get(isAuthenticated,getAllUsers);
+routes.route("/users",).get(checkUserAuth,getAllUsers);
 
 routes.route("/forgot/password").post(forgotPassword);
 
