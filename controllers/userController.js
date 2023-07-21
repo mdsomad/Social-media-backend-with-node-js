@@ -354,9 +354,22 @@ exports.FetchAllFollowingById = async (req,resp)=>{
 
       if(user.email != updateData.email){
         const checkEmail = await User.find({email:updateData.email}); //*
+
         if(checkEmail){
           return resp.json({ success:false, message:"Email id already exists"})
         }
+
+        const updatedUser = await User.findOneAndUpdate(
+          { _id: req.user._id },
+          updateData,
+          { new: true }
+        );
+
+          if(!updatedUser) {
+              throw "user not found!";
+          }
+        
+          return resp.json({success: true, user: updatedUser, message: "User updated!" });
 
       }else{
         const updatedUser = await User.findOneAndUpdate(
