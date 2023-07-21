@@ -352,38 +352,23 @@ exports.FetchAllFollowingById = async (req,resp)=>{
 
       const user = await User.findById(req.user._id);
 
-      if(user.email != updateData.email){
-        const checkEmail = await User.find({email:updateData.email}); //*
+      console.log(user.email);
+      console.log(updateData.email);
 
-        if(checkEmail){
-          return resp.json({ success:false, message:"Email id already exists"})
+
+      let updatedUser = await User.findOneAndUpdate(
+        { _id: req.user._id },
+        updateData,
+        { new: true }
+      );
+
+        if(!updatedUser) {
+            throw "user not found!";
         }
 
-        const updatedUser = await User.findOneAndUpdate(
-          { _id: req.user._id },
-          updateData,
-          { new: true }
-        );
+      return resp.json({success: true, user: updatedUser});
+      
 
-          if(!updatedUser) {
-              throw "user not found!";
-          }
-        
-          return resp.json({success: true, user: updatedUser, message: "User updated!" });
-
-      }else{
-        const updatedUser = await User.findOneAndUpdate(
-          { _id: req.user._id },
-          updateData,
-          { new: true }
-        );
-
-          if(!updatedUser) {
-              throw "user not found!";
-          }
-
-        return resp.json({success: true, user: updatedUser, message: "User updated!" });
-      }
 
 
       
@@ -393,7 +378,13 @@ exports.FetchAllFollowingById = async (req,resp)=>{
       
       
     } catch (error) {
-       resp.status(500).json({ success:false, message:`Server Error ${error.message}`})
+
+        //* Mongoose duplicate key error
+      if (error.code === 11000) {
+        return resp.json({ success:false, message:`Email already exists`})
+      }
+      
+         resp.status(500).json({ success:false, message:`Server Error ${message}`})
     }
   }
 
