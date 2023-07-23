@@ -384,7 +384,7 @@ exports.FetchAllFollowingById = async (req,resp)=>{
         return resp.json({ success:false, message:`Email already exists`})
       }
       
-         resp.status(500).json({ success:false, message:`Server Error ${message}`})
+         resp.json({ success:false, message:`Server Error ${message}`})
     }
   }
 
@@ -432,9 +432,9 @@ exports.FetchAllFollowingById = async (req,resp)=>{
                  
               }else{
 
-                
+                await cloudinary.uploader.destroy(user.avater.public_id);
 
-                console.log(`Database Mine Url hai --> ${imageName}`);
+                console.log(`Database Mine Url hai`);
                 
                 user.avater.public_id = result.public_id
                 user.avater.url = result.url
@@ -445,7 +445,6 @@ exports.FetchAllFollowingById = async (req,resp)=>{
                 //   console.log(error,result);
                 // })
 
-                await cloudinary.uploader.destroy(user.avater.public_id);
 
                 return resp.status(200).json({success:true, message: "Profile pic Update",user})
 
@@ -455,7 +454,7 @@ exports.FetchAllFollowingById = async (req,resp)=>{
               
              
            } catch (error) {
-              resp.status(500).json({ success:false, message:`Server Error : ${error.message}`})
+              resp.status(400).json({ success:false, message:`Server Error : ${error.message}`})
            }
             
             

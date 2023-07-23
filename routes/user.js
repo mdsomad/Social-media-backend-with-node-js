@@ -42,7 +42,7 @@ routes.route("/change/password",).put(checkUserAuth,changePassowrd);
 
 routes.route("/update/profile",).put(checkUserAuth,updateProfile);
 
-routes.route("/update/avater",).put(isAuthenticated,updateAvaterProfile);
+routes.route("/update/avater",).put(checkUserAuth,updateAvaterProfile);
 
 routes.route("/delete/me",).delete(isAuthenticated,deleteMyProfile);
 
