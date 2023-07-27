@@ -44,7 +44,7 @@ routes.route("/update/profile").put(checkUserAuth,updateProfile);
 
 routes.route("/update/avater").put(checkUserAuth,updateAvaterProfile);
 
-routes.route("/delete/me").delete(isAuthenticated,deleteMyProfile);
+routes.route("/delete/me").delete(checkUserAuth,deleteMyProfile);
 
 routes.route("/me").get(checkUserAuth,myProfile);
 

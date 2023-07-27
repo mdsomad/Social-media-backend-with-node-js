@@ -381,7 +381,7 @@ exports.FetchAllFollowingById = async (req,resp)=>{
 
         //* Mongoose duplicate key error
       if (error.code === 11000) {
-        return resp.json({ success:false, message:`Email already exists`})
+         return resp.json({ success:false, message:`Email already exists`})
       }
       
          resp.json({ success:false, message:`Server Error ${message}`})
@@ -395,7 +395,7 @@ exports.FetchAllFollowingById = async (req,resp)=>{
 
 
 
-  
+
 
  //TODO updateAvaterProfile function Create
   exports.updateAvaterProfile = async (req,resp)=>{
@@ -520,10 +520,10 @@ exports.deleteMyProfile = async (req,resp)=>{
 
 
     //* Logout user after deleting profile
-    resp.cookie("token",null,{
-      expires: new Date(Date.now()),
-      httpOnly:true
-    })
+    // resp.cookie("token",null,{
+    //   expires: new Date(Date.now()),
+    //   httpOnly:true
+    // })
     
 
 
