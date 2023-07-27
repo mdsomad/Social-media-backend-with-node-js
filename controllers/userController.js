@@ -82,7 +82,7 @@ exports.login = async (req,resp)=>{
     const user = await User.findOne({email}).select("+password");  //* Find User
      
     if(!user){
-      return resp.status(400).json({ status:false, message:"User does not exist"})
+      return resp.json({ status:false, message:"User does not exist"})
     }
     
 
@@ -113,7 +113,7 @@ exports.login = async (req,resp)=>{
     resp.status(200).cookie("token",token,options).json({status:true,message:"Login Successfully",token:token,userId:user._id})
     
   } catch (error) {
-    resp.status(500).json({ status:false, message:`Server Error ${error.message}`})
+    resp.json({ status:false, message:`Server Error ${error.message}`})
   }
   
   
